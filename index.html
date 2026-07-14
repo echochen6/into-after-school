@@ -204,6 +204,23 @@
   .quick button{flex:1;border:1px solid var(--line);background:#fff;font:inherit;font-size:13.5px;font-weight:600;color:var(--ink);padding:13px;border-radius:14px;cursor:pointer}
   .quick button:active{transform:scale(.98)}
   .auth-note{font-size:11.5px;color:#A79B86;text-align:center;margin-top:14px;line-height:1.5}
+  /* 缴费 / 账单 */
+  .paybig{font-family:var(--font-num);font-size:38px;font-weight:700;color:var(--honey-deep);line-height:1}
+  .autopay-box{margin-top:16px;padding-top:16px;border-top:1px solid #F1E2C4}
+  .ap-on{display:flex;justify-content:space-between;align-items:center;color:var(--teal);font-weight:700;font-size:14.5px}
+  .ap-on span{color:var(--ink-soft);font-weight:500;font-size:12px}
+  .billrow{display:flex;align-items:center;gap:10px;font-size:13.5px;padding:9px 0}
+  .billrow:not(:last-child){border-bottom:1px solid #F4EEE1}
+  .billrow b{margin-left:auto;font-family:var(--font-num)}
+  .bstat{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px}
+  .bstat.ok{background:#EAF4F0;color:var(--teal)}
+  .bill-tiles{display:flex;gap:10px}
+  .tile{flex:1;background:var(--card);border:1px solid #F3ECDD;border-radius:14px;padding:13px}
+  .tile span{font-size:11.5px;color:var(--ink-soft)}
+  .tile b{display:block;font-family:var(--font-num);font-size:20px;margin-top:4px}
+  .tile b.green{color:var(--teal)} .tile b.warn{color:#C0562F}
+  .ratebar{height:9px;border-radius:999px;background:#EFE6D4;overflow:hidden}
+  .ratebar>div{height:100%;background:linear-gradient(90deg,var(--honey),var(--honey-deep));border-radius:999px}
   /* today menu */
   .menulist{display:flex;flex-direction:column;gap:2px}
   .menuitem{display:flex;align-items:center;gap:9px;font-size:14px;padding:6px 0}
@@ -338,6 +355,10 @@
         <div class="bp-card money"><h3>② 交易抽佣</h3><p class="big">托管费 / 课时费</p><p>家长在平台付费,平台抽成 —— 规模化后的主要利润来源。</p></div>
         <div class="bp-card money"><h3>③ 增值</h3><p class="big">英语课 · 保险 · 相册</p><p>合规增值服务单独售卖,提升客单与留存。</p></div>
       </div>
+      <div class="bp-card" style="margin-top:16px;background:#FFF7EA;border-color:#F1E2C4">
+        <h3>变现闭环:每月自动扣款</h3>
+        <p>家长端<strong>微信委托代扣、每月自动划款</strong> → 机构端自动出账、对账、催缴、考勤联动退费。月付小额、比一次性预收一年<strong>更合规、现金流更稳</strong>,退费纠纷更少。</p>
+      </div>
     </section>
 
     <section class="bp-sec">
@@ -374,7 +395,7 @@
 </div>
 
 <script>
-const KEY = "afterschool_demo_v2";
+const KEY = "afterschool_demo_v3";
 const AUTH_KEY = "afterschool_auth_v1";
 const STEPS = [
   {label:"已接到", emoji:"🚸", color:"#5B8DEF"},
@@ -402,19 +423,21 @@ function seed(){
     view:"today",       // parent tabs: today|photos|class
     sel:null,           // teacher selected student id
     menu:["番茄牛肉面","清炒西兰花","玉米排骨汤","餐后水果:苹果"],
+    orgView:"roster",
+    plan:{name:"月托管 · 含晚餐", amount:1200, day:5},
     students:[
       {id:"s1", name:"林小满", emoji:"🐤", grade:"二年级 · 3班", mine:true, req:null, note:"", mood:"😄",
        stamps:[{i:0,t:"15:42"},{i:1,t:"16:25"},{i:2,t:"17:08"}], photos:[0,1],
        pickups:[{name:"妈妈 · 林女士",rel:"母亲"},{name:"爷爷 · 林先生",rel:"祖父"}],
-       homework:[{s:"语文",done:true},{s:"数学",done:true},{s:"英语",done:false}]},
+       homework:[{s:"语文",done:true},{s:"数学",done:true},{s:"英语",done:false}], autopay:false, bills:[]},
       {id:"s2", name:"陈乐乐", emoji:"🐰", grade:"二年级 · 1班", mine:false, req:null, note:"", mood:"🙂",
        stamps:[{i:0,t:"15:50"},{i:1,t:"16:25"}], photos:[2],
        pickups:[{name:"妈妈 · 陈女士",rel:"母亲"}],
-       homework:[{s:"语文",done:false},{s:"数学",done:false}]},
+       homework:[{s:"语文",done:false},{s:"数学",done:false}], autopay:false, bills:[]},
       {id:"s3", name:"王一诺", emoji:"🦊", grade:"三年级 · 2班", mine:false, req:null, note:"作业完成得很棒", mood:"😄",
        stamps:[{i:0,t:"15:38"},{i:1,t:"16:20"},{i:2,t:"16:58"},{i:3,t:"17:40"}], photos:[3,4],
        pickups:[{name:"爸爸 · 王先生",rel:"父亲"},{name:"奶奶 · 王女士",rel:"祖母"}],
-       homework:[{s:"语文",done:true},{s:"数学",done:true},{s:"英语",done:true}]},
+       homework:[{s:"语文",done:true},{s:"数学",done:true},{s:"英语",done:true}], autopay:true, bills:[{month:"7月",amount:1200,status:"已扣款",date:"07-05"}]},
     ],
   };
 }
@@ -522,6 +545,13 @@ function setMood(id,m){ const st=S.students.find(s=>s.id===id); st.mood=m; save(
 function addPhoto(id,idx){ const st=S.students.find(s=>s.id===id); if(!st.photos.includes(idx)) st.photos.push(idx); save(); render(); toast("照片已发给家长"); }
 function saveNote(id,val){ const st=S.students.find(s=>s.id===id); st.note=val; save(); }
 function saveMenu(val){ S.menu = val.split("\n").map(x=>x.trim()).filter(Boolean); save(); toast("今日菜单已更新"); }
+function setOrgView(v){ S.orgView=v; S.sel=null; save(); render(); }
+function curMonthLabel(){ return (new Date().getMonth()+1)+"月"; }
+function openAutopay(id){ const st=S.students.find(s=>s.id===id); st.autopay=true;
+  const m=curMonthLabel(); const d=String(new Date().getMonth()+1).padStart(2,"0")+"-"+String(S.plan.day).padStart(2,"0");
+  if(!st.bills.some(b=>b.month===m)) st.bills.unshift({month:m, amount:S.plan.amount, status:"已扣款", date:d});
+  save(); render(); toast("已开通自动扣款,本月已扣 ¥"+S.plan.amount); }
+function cancelAutopay(id){ const st=S.students.find(s=>s.id===id); st.autopay=false; save(); render(); toast("已关闭自动扣款"); }
 
 let toastT;
 function toast(msg){ const el=document.getElementById("toast"); el.textContent=msg; el.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove("show"),2200); }
@@ -542,10 +572,12 @@ function parentView(){
     <button class="${S.view==='summary'?'on':''}" onclick="setView('summary')">小结</button>
     <button class="${S.view==='photos'?'on':''}" onclick="setView('photos')">照片</button>
     <button class="${S.view==='class'?'on':''}" onclick="setView('class')">英语课</button>
+    <button class="${S.view==='pay'?'on':''}" onclick="setView('pay')">缴费</button>
   </div>`;
   if(S.view==="photos") return tabs+photosView(st);
   if(S.view==="class") return tabs+classView();
   if(S.view==="summary") return tabs+summaryView(st);
+  if(S.view==="pay") return tabs+payView(st);
   return tabs+todayView(st);
 }
 
@@ -641,6 +673,35 @@ function shareSummary(id){ const st=S.students.find(s=>s.id===id); const cur=cur
   if(navigator.clipboard){ navigator.clipboard.writeText(txt).then(()=>toast("小结已复制,可粘贴到微信")).catch(()=>toast("已生成小结")); }
   else toast("已生成小结"); }
 
+function payView(st){
+  const p=S.plan;
+  const on=st.autopay;
+  const records = st.bills.length
+    ? st.bills.map(b=>`<div class="billrow"><span>${b.month} · ${p.name}</span><b>¥${b.amount}</b><span class="bstat ok">${b.status}</span></div>`).join("")
+    : `<p style="font-size:12.5px;color:var(--ink-soft);margin:0">暂无扣款记录</p>`;
+  return `
+  <div class="hero" style="padding:18px">
+    <div class="eyebrow" style="margin-bottom:10px">当前套餐</div>
+    <div style="display:flex;align-items:baseline;gap:8px">
+      <div class="paybig">¥${p.amount}</div><div style="color:var(--ink-soft);font-size:13px">/ 月</div>
+    </div>
+    <div style="font-size:13.5px;color:var(--ink);margin-top:4px">${p.name}</div>
+    <div style="font-size:12px;color:var(--ink-soft);margin-top:6px">扣款日:每月 ${p.day} 号</div>
+    <div class="autopay-box ${on?'on':''}">
+      ${on
+        ? `<div class="ap-on">✓ 已开通自动扣款<span>下次扣款 ${String(new Date().getMonth()+2).padStart(2,'0')}-${String(p.day).padStart(2,'0')}</span></div>
+           <button class="btn ghost" style="margin-top:10px" onclick="cancelAutopay('${st.id}')">关闭自动扣款</button>`
+        : `<button class="btn primary" onclick="openAutopay('${st.id}')">开通自动扣款 · ¥${p.amount}/月</button>
+           <p style="font-size:11.5px;color:var(--ink-soft);margin-top:10px;text-align:center">开通后每月自动划款,免去每月手动转账催缴</p>`}
+    </div>
+  </div>
+  <div class="pickup" style="margin-top:14px">
+    <div class="eyebrow" style="margin-bottom:8px">扣款记录</div>
+    ${records}
+  </div>
+  <p style="font-size:11px;color:#A79B86;text-align:center;margin-top:12px">演示版:未接入真实支付。正式版通过微信支付委托代扣实现。</p>`;
+}
+
 function photosView(st){
   if(!st.photos.length) return `<div class="muted-title">今日照片</div><div class="empty">老师还没上传照片,先去别处逛逛~</div>`;
   const cells=st.photos.map(i=>{const p=PHOTO_POOL[i];return `<div class="ph" style="background:${p.g}"><div class="emo">${p.emo}</div><span>${p.cap}</span></div>`}).join("");
@@ -660,6 +721,13 @@ function classView(){
 /* ---------- teacher ---------- */
 function teacherView(){
   if(S.sel) return teacherDetail(S.sel);
+  const tabs=`<div class="tabs">
+    <button class="${S.orgView!=='billing'?'on':''}" onclick="setOrgView('roster')">今日名单</button>
+    <button class="${S.orgView==='billing'?'on':''}" onclick="setOrgView('billing')">收费管理</button>
+  </div>`;
+  return tabs + (S.orgView==="billing" ? orgBilling() : orgRoster());
+}
+function orgRoster(){
   const rows=S.students.map(st=>{
     const cur=curIdx(st); const s=cur>=0?STEPS[cur]:null;
     return `<div class="srow" onclick="openStudent('${st.id}')">
@@ -678,6 +746,39 @@ function teacherView(){
     </div>
     <div class="eyebrow">今日名单 · ${S.students.length} 人</div>
     ${reqCount?`<div class="alert"><p>🔔 ${reqCount} 位家长已到,等待交接</p></div>`:''}
+    ${rows}`;
+}
+function orgBilling(){
+  const p=S.plan; const n=S.students.length;
+  const paid=S.students.filter(s=>s.autopay).length;
+  const total=n*p.amount, collected=paid*p.amount, pending=total-collected;
+  const rate=n?Math.round(paid/n*100):0;
+  const rows=S.students.map(st=>`<div class="srow" style="cursor:default">
+      <div class="ava">${st.emoji}</div>
+      <div class="m"><b>${st.name}</b><p>${st.autopay?('本月已扣 ¥'+p.amount):'本月待收'}</p></div>
+      <span class="chip" style="background:${st.autopay?'#3E8E7E':'#B9AF9D'}">${st.autopay?'已开通':'未开通'}</span>
+    </div>`).join("");
+  return `
+    <div class="eyebrow">本月账单 · ${curMonthLabel()}</div>
+    <div class="bill-tiles">
+      <div class="tile"><span>应收</span><b>¥${total}</b></div>
+      <div class="tile"><span>已收</span><b class="green">¥${collected}</b></div>
+      <div class="tile"><span>待收</span><b class="warn">¥${pending}</b></div>
+    </div>
+    <div class="pickup" style="margin:14px 0">
+      <div class="eyebrow" style="margin-bottom:6px">自动扣款开通率</div>
+      <div class="ratebar"><div style="width:${rate}%"></div></div>
+      <p style="font-size:12px;color:var(--ink-soft);margin:8px 0 0">${paid}/${n} 户已开通 · 开通越多,催缴越省事</p>
+    </div>
+    <div class="menu-edit" style="margin-bottom:16px">
+      <div class="eyebrow" style="margin-bottom:6px">收费套餐</div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:14px;font-weight:600">${p.name}</span>
+        <span style="font-family:var(--font-num);font-size:18px;color:var(--honey-deep);font-weight:700">¥${p.amount}/月</span>
+      </div>
+      <p style="font-size:11px;color:var(--ink-soft);margin-top:6px">扣款日:每月 ${p.day} 号</p>
+    </div>
+    <div class="eyebrow">各家庭扣款状态</div>
     ${rows}`;
 }
 function openStudent(id){ S.sel=id; save(); render(); }
