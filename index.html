@@ -183,6 +183,27 @@
   .srow2 .sv{margin-left:auto;font-weight:600}
   .snote{padding:12px 0 2px;font-size:12.5px;color:var(--ink-soft);line-height:1.5}
   .bp-open{color:var(--honey-deep)!important;border-color:#EAD9B8!important;background:#FFF6E6!important;font-weight:600}
+  /* account bar + auth */
+  .acctbar{display:none;align-items:center;justify-content:space-between;background:#EFE6D4;border-radius:999px;padding:6px 6px 6px 14px}
+  .acctbar .who-tag{font-size:13px;font-weight:600;color:var(--ink)}
+  .acctbar .logout{border:0;background:#fff;color:var(--ink-soft);font:inherit;font-size:12px;font-weight:600;padding:7px 14px;border-radius:999px;cursor:pointer}
+  .acctbar .logout:active{transform:scale(.96)}
+  .auth{padding-top:14px}
+  .auth-hi{font-size:20px;font-weight:800;letter-spacing:-.01em;margin-bottom:16px}
+  .auth-tabs{display:flex;background:#EFE6D4;border-radius:999px;padding:4px;gap:4px;margin-bottom:18px}
+  .auth-tabs button{flex:1;border:0;background:transparent;font:inherit;font-weight:600;font-size:14px;color:var(--ink-soft);padding:10px;border-radius:999px;cursor:pointer}
+  .auth-tabs button.on{background:#fff;color:var(--ink);box-shadow:0 3px 8px -3px rgba(80,60,20,.3)}
+  .rolepick{display:flex;gap:8px;margin-bottom:16px}
+  .rolepick button{flex:1;border:1px solid var(--line);background:#fff;font:inherit;font-size:14px;font-weight:600;color:var(--ink-soft);padding:13px;border-radius:14px;cursor:pointer}
+  .rolepick button.on{background:var(--honey);border-color:var(--honey);color:#fff}
+  .af{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);margin-bottom:14px}
+  .af input,.af select{display:block;width:100%;margin-top:7px;border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;font-size:14px;background:#fff;color:var(--ink)}
+  .auth .btn{margin-top:4px}
+  .auth-div{text-align:center;font-size:12px;color:var(--ink-soft);margin:20px 0 12px;position:relative}
+  .quick{display:flex;gap:10px}
+  .quick button{flex:1;border:1px solid var(--line);background:#fff;font:inherit;font-size:13.5px;font-weight:600;color:var(--ink);padding:13px;border-radius:14px;cursor:pointer}
+  .quick button:active{transform:scale(.98)}
+  .auth-note{font-size:11.5px;color:#A79B86;text-align:center;margin-top:14px;line-height:1.5}
   /* today menu */
   .menulist{display:flex;flex-direction:column;gap:2px}
   .menuitem{display:flex;align-items:center;gap:9px;font-size:14px;padding:6px 0}
@@ -256,10 +277,7 @@
         <button class="reset" onclick="resetDemo()">重置</button>
       </div>
     </div>
-    <div class="roles">
-      <button id="r-parent" onclick="setRole('parent')">家长视图</button>
-      <button id="r-teacher" onclick="setRole('teacher')">老师视图</button>
-    </div>
+    <div class="acctbar" id="acctbar"></div>
   </div>
   <div class="scroll"><div class="pad" id="app"></div></div>
   <div class="toast" id="toast"></div>
@@ -357,6 +375,7 @@
 
 <script>
 const KEY = "afterschool_demo_v2";
+const AUTH_KEY = "afterschool_auth_v1";
 const STEPS = [
   {label:"已接到", emoji:"🚸", color:"#5B8DEF"},
   {label:"用餐中", emoji:"🍚", color:"#E79A3C"},
@@ -400,11 +419,80 @@ function seed(){
   };
 }
 let S = load();
+let AUTH = loadAuth();
 function load(){ try{ const r=localStorage.getItem(KEY); return r?JSON.parse(r):seed(); }catch(e){ return seed(); } }
 function save(){ localStorage.setItem(KEY, JSON.stringify(S)); }
-function resetDemo(){ S=seed(); save(); render(); toast("已恢复初始状态"); }
+function resetDemo(){ S=seed(); save(); syncRole(); render(); toast("已恢复初始状态"); }
 function openBlueprint(){ const b=document.getElementById("blueprint"); b.hidden=false; b.scrollTop=0; const sc=b.querySelector(".bp-scroll"); if(sc) sc.scrollTop=0; }
 function closeBlueprint(){ document.getElementById("blueprint").hidden=true; }
+
+/* ---------- 账号(演示版,存本地浏览器)---------- */
+function seedAuth(){ return { accounts:[
+  {u:"jigou", p:"123456", role:"org", orgName:"阳光晚托(示范)"},
+  {u:"mama",  p:"123456", role:"parent", childId:"s1"}
+], session:null }; }
+function loadAuth(){ try{ const r=localStorage.getItem(AUTH_KEY); return r?JSON.parse(r):seedAuth(); }catch(e){ return seedAuth(); } }
+function saveAuth(){ localStorage.setItem(AUTH_KEY, JSON.stringify(AUTH)); }
+function curUser(){ return AUTH.accounts.find(a=>a.u===AUTH.session)||null; }
+let authUI={tab:"login", regRole:"parent"};
+function authTab(t){ authUI.tab=t; render(); }
+function setRegRole(r){ authUI.regRole=r; render(); }
+function av(id){ const e=document.getElementById(id); return e?e.value.trim():""; }
+function syncRole(){ const usr=curUser(); if(!usr) return;
+  if(usr.role==="parent"){ S.role="parent"; S.view="today"; S.students.forEach(s=>s.mine=(s.id===usr.childId)); }
+  else { S.role="org"; S.sel=null; } save(); }
+function doLogin(){ const u=av("li-u"), p=av("li-p");
+  const a=AUTH.accounts.find(x=>x.u===u&&x.p===p);
+  if(!a){ toast("用户名或密码错误"); return; }
+  AUTH.session=u; saveAuth(); syncRole(); render(); toast("欢迎回来,"+u); }
+function quickLogin(u){ AUTH.session=u; saveAuth(); syncRole(); render(); toast("已进入示范账号"); }
+function doRegister(){ const u=av("rg-u"), p=av("rg-p");
+  if(!u||!p){ toast("请填写用户名和密码"); return; }
+  if(AUTH.accounts.find(x=>x.u===u)){ toast("该用户名已存在"); return; }
+  const role=authUI.regRole; const acc={u,p,role};
+  if(role==="parent"){ acc.childId=av("rg-child")||S.students[0].id; } else { acc.orgName=av("rg-org")||"我的托班"; }
+  AUTH.accounts.push(acc); AUTH.session=u; saveAuth(); syncRole(); render(); toast("注册成功,已登录"); }
+function logout(){ AUTH.session=null; saveAuth(); authUI.tab="login"; render(); toast("已退出"); }
+function renderAcctBar(){ const el=document.getElementById("acctbar"); const usr=curUser();
+  if(!usr){ el.style.display="none"; el.innerHTML=""; return; }
+  el.style.display="flex";
+  el.innerHTML=`<span class="who-tag">👤 ${usr.u} · ${usr.role==="parent"?"家长":"机构"}</span><button class="logout" onclick="logout()">退出</button>`; }
+function authView(){
+  const childOpts=S.students.map(s=>`<option value="${s.id}">${s.name}(${s.grade})</option>`).join("");
+  const tabs=`<div class="auth-tabs">
+    <button class="${authUI.tab==='login'?'on':''}" onclick="authTab('login')">登录</button>
+    <button class="${authUI.tab==='register'?'on':''}" onclick="authTab('register')">注册</button></div>`;
+  if(authUI.tab==="register"){
+    return `<div class="auth">
+      <div class="auth-hi">创建账号</div>
+      ${tabs}
+      <div class="rolepick">
+        <button class="${authUI.regRole==='parent'?'on':''}" onclick="setRegRole('parent')">我是家长</button>
+        <button class="${authUI.regRole==='org'?'on':''}" onclick="setRegRole('org')">我是机构</button>
+      </div>
+      <label class="af">用户名<input id="rg-u" placeholder="给自己起个用户名"></label>
+      <label class="af">密码<input id="rg-p" type="password" placeholder="设置密码"></label>
+      ${authUI.regRole==='parent'
+        ? `<label class="af">我的孩子<select id="rg-child">${childOpts}</select></label>`
+        : `<label class="af">机构名称<input id="rg-org" placeholder="例如:阳光晚托"></label>`}
+      <button class="btn primary" onclick="doRegister()">注册并进入</button>
+      <p class="auth-note">演示版:账号只保存在你当前这台设备的浏览器里,不会上传服务器。</p>
+    </div>`;
+  }
+  return `<div class="auth">
+    <div class="auth-hi">欢迎来到 INTO</div>
+    ${tabs}
+    <label class="af">用户名<input id="li-u" placeholder="用户名"></label>
+    <label class="af">密码<input id="li-p" type="password" placeholder="密码"></label>
+    <button class="btn primary" onclick="doLogin()">登录</button>
+    <div class="auth-div">或 · 一键体验示范账号</div>
+    <div class="quick">
+      <button onclick="quickLogin('jigou')">🏫 机构示范</button>
+      <button onclick="quickLogin('mama')">👪 家长示范</button>
+    </div>
+    <p class="auth-note">示范账号:机构 jigou / 家长 mama,密码都是 123456</p>
+  </div>`;
+}
 
 function nowHHMM(){ const d=new Date(); return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
 function curIdx(st){ return st.stamps.length?Math.max(...st.stamps.map(s=>s.i)):-1; }
@@ -440,9 +528,10 @@ function toast(msg){ const el=document.getElementById("toast"); el.textContent=m
 
 /* ---------- render ---------- */
 function render(){
-  document.getElementById("r-parent").classList.toggle("on",S.role==="parent");
-  document.getElementById("r-teacher").classList.toggle("on",S.role==="teacher");
-  document.getElementById("app").innerHTML = S.role==="parent" ? parentView() : teacherView();
+  renderAcctBar();
+  const usr=curUser();
+  document.getElementById("app").innerHTML =
+    !usr ? authView() : (usr.role==="parent" ? parentView() : teacherView());
 }
 function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 
@@ -637,6 +726,7 @@ function teacherDetail(id){
   </div>`;
 }
 
+syncRole();
 render();
 </script>
 </body>
