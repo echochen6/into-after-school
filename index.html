@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>INTO · After School</title>
+<style>
+  :root{
+    --paper:#FBF6EC;
+    --card:#FFFFFF;
+    --ink:#33302B;
+    --ink-soft:#6E675C;
+    --line:#EAE1D2;
+    --honey:#E79A3C;
+    --honey-deep:#C97C22;
+    --teal:#3E8E7E;
+    --font-cn:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    --font-num:"Georgia","Songti SC","Times New Roman",serif;
+    --shadow:0 18px 50px -20px rgba(70,50,20,.35);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    font-family:var(--font-cn);
+    color:var(--ink);
+    background:
+      radial-gradient(120% 90% at 50% -10%, #F6E4C6 0%, rgba(246,228,198,0) 55%),
+      linear-gradient(180deg,#F3E9D6 0%, #E9DcC4 100%);
+    min-height:100dvh;
+    display:flex;align-items:center;justify-content:center;
+    padding:24px 12px;
+  }
+  /* phone frame */
+  .phone{
+    width:100%;max-width:412px;height:min(860px,94dvh);
+    background:var(--paper);border-radius:34px;overflow:hidden;
+    box-shadow:var(--shadow);position:relative;display:flex;flex-direction:column;
+    border:1px solid rgba(255,255,255,.6);
+  }
+  @media (max-width:440px){ body{padding:0} .phone{border-radius:0;height:100dvh;max-width:none} }
+
+  /* top bar */
+  .top{padding:16px 18px 12px;display:flex;flex-direction:column;gap:12px;background:linear-gradient(180deg,#FFFDF8, #FBF6EC)}
+  .brandrow{display:flex;align-items:center;justify-content:space-between}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:.02em}
+  .brand .mark{width:26px;height:26px;border-radius:9px;background:conic-gradient(from 210deg,var(--honey),#F2C078,var(--honey-deep));display:grid;place-items:center;font-size:14px;box-shadow:0 4px 10px -3px rgba(201,124,34,.6)}
+  .brand small{display:block;font-size:10px;font-weight:500;color:var(--ink-soft);letter-spacing:.14em}
+  .reset{border:1px solid var(--line);background:#fff;color:var(--ink-soft);font:inherit;font-size:12px;padding:6px 11px;border-radius:999px;cursor:pointer}
+  .reset:active{transform:scale(.96)}
+  /* role toggle */
+  .roles{display:flex;background:#EFE6D4;border-radius:999px;padding:4px;gap:4px}
+  .roles button{flex:1;border:0;background:transparent;font:inherit;font-weight:600;font-size:13px;color:var(--ink-soft);padding:9px;border-radius:999px;cursor:pointer;transition:.18s}
+  .roles button.on{background:#fff;color:var(--ink);box-shadow:0 3px 8px -3px rgba(80,60,20,.3)}
+
+  .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .pad{padding:16px 18px 28px}
+  .eyebrow{font-size:11px;letter-spacing:.18em;color:var(--honey-deep);font-weight:700;text-transform:uppercase;margin-bottom:10px}
+
+  /* hero status */
+  .hero{background:var(--card);border-radius:22px;padding:20px;box-shadow:0 10px 30px -22px rgba(80,60,20,.5);border:1px solid #F3ECDD}
+  .hero .who{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .ava{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:24px;background:#F6EEDF}
+  .who h1{font-size:18px;font-weight:700}
+  .who p{font-size:12px;color:var(--ink-soft);margin-top:2px}
+  .bignow{display:flex;align-items:center;gap:12px;padding:14px;border-radius:16px;background:linear-gradient(135deg,#FFF7EA,#FBEFD9);border:1px solid #F1E2C4}
+  .bignow .dot{width:12px;height:12px;border-radius:50%;box-shadow:0 0 0 5px rgba(0,0,0,.05)}
+  .bignow .txt b{font-size:16px;display:block}
+  .bignow .txt span{font-size:11.5px;color:var(--ink-soft)}
+
+  /* timeline signature */
+  .tl{margin-top:22px;position:relative;padding-left:26px}
+  .tl::before{content:"";position:absolute;left:9px;top:6px;bottom:6px;width:2px;background:var(--line);border-radius:2px}
+  .tl.live::after{content:"";position:absolute;left:9px;top:6px;width:2px;background:linear-gradient(180deg,var(--honey),var(--honey-deep));border-radius:2px;height:var(--fill,0%);box-shadow:0 0 12px rgba(231,154,60,.7)}
+  .node{position:relative;padding:0 0 20px}
+  .node:last-child{padding-bottom:2px}
+  .node .bead{position:absolute;left:-26px;top:1px;width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid var(--line);display:grid;place-items:center;font-size:10px}
+  .node.done .bead{border-color:var(--honey);background:var(--honey);color:#fff;box-shadow:0 0 0 4px rgba(231,154,60,.15)}
+  .node.next .bead{border-color:var(--honey);border-style:dashed;animation:pulse 1.6s infinite}
+  @keyframes pulse{50%{box-shadow:0 0 0 6px rgba(231,154,60,.18)}}
+  .node h3{font-size:14.5px;font-weight:600}
+  .node.pending h3{color:#B9AF9D}
+  .node time{font-family:var(--font-num);font-size:15px;color:var(--honey-deep);font-weight:600;letter-spacing:.02em}
+  .node small{display:block;font-size:11.5px;color:var(--ink-soft);margin-top:2px}
+
+  /* pickup card */
+  .pickup{margin-top:20px;background:var(--card);border-radius:18px;padding:16px;border:1px solid #F3ECDD}
+  .pickup p{font-size:12.5px;color:var(--ink-soft);margin-bottom:12px}
+  .btn{width:100%;border:0;font:inherit;font-weight:700;font-size:15px;padding:14px;border-radius:14px;cursor:pointer;transition:.15s}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:linear-gradient(135deg,var(--honey),var(--honey-deep));color:#fff;box-shadow:0 10px 22px -10px rgba(201,124,34,.9)}
+  .btn.ghost{background:#F2EADB;color:var(--honey-deep)}
+  .btn:disabled{opacity:.5;cursor:default}
+  .waiting{display:flex;align-items:center;gap:8px;justify-content:center;color:var(--teal);font-weight:600;font-size:13px;padding:12px;background:#EAF4F0;border-radius:12px}
+
+  /* tabs */
+  .tabs{display:flex;gap:6px;margin-bottom:16px}
+  .tabs button{flex:1;border:1px solid var(--line);background:#fff;font:inherit;font-size:13px;font-weight:600;color:var(--ink-soft);padding:9px;border-radius:12px;cursor:pointer}
+  .tabs button.on{background:var(--ink);color:#FBF6EC;border-color:var(--ink)}
+
+  /* photos */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .ph{aspect-ratio:1/1;border-radius:16px;display:flex;flex-direction:column;justify-content:flex-end;padding:10px;color:#fff;font-size:12px;font-weight:600;position:relative;overflow:hidden}
+  .ph span{position:relative;z-index:1;text-shadow:0 1px 4px rgba(0,0,0,.3)}
+  .ph .emo{position:absolute;inset:0;display:grid;place-items:center;font-size:40px;opacity:.9}
+  .empty{text-align:center;color:var(--ink-soft);font-size:13px;padding:40px 10px;background:#fff;border-radius:16px;border:1px dashed var(--line)}
+
+  /* class list */
+  .cls{background:var(--card);border-radius:16px;padding:14px 16px;border:1px solid #F3ECDD;display:flex;align-items:center;gap:14px;margin-bottom:10px}
+  .cls .day{text-align:center;min-width:44px}
+  .cls .day b{font-family:var(--font-num);font-size:20px;display:block;line-height:1;color:var(--honey-deep)}
+  .cls .day span{font-size:10px;color:var(--ink-soft)}
+  .cls .info{flex:1}
+  .cls .info h4{font-size:14px;font-weight:600}
+  .cls .info p{font-size:11.5px;color:var(--ink-soft);margin-top:3px}
+  .cls a{text-decoration:none;background:#EAF4F0;color:var(--teal);font-size:12.5px;font-weight:700;padding:8px 13px;border-radius:10px}
+
+  /* teacher list */
+  .srow{background:var(--card);border-radius:16px;padding:13px 15px;border:1px solid #F3ECDD;display:flex;align-items:center;gap:12px;margin-bottom:10px;cursor:pointer}
+  .srow:active{transform:scale(.99)}
+  .srow .ava{width:40px;height:40px;font-size:20px;border-radius:12px}
+  .srow .m{flex:1}
+  .srow .m b{font-size:14.5px}
+  .srow .m p{font-size:11.5px;color:var(--ink-soft);margin-top:2px}
+  .chip{font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;color:#fff}
+  .bell{width:9px;height:9px;border-radius:50%;background:#E5533D;box-shadow:0 0 0 4px rgba(229,83,61,.18)}
+
+  /* teacher detail */
+  .back{background:none;border:0;font:inherit;color:var(--honey-deep);font-weight:600;font-size:14px;cursor:pointer;margin-bottom:14px;display:flex;align-items:center;gap:5px}
+  .alert{background:#FBEAE6;border:1px solid #F3C9C0;border-radius:14px;padding:14px;margin-bottom:16px}
+  .alert p{font-size:13px;font-weight:600;color:#B23A25;margin-bottom:10px}
+  .stepper{display:flex;flex-direction:column;gap:0;margin:8px 0 20px;padding-left:6px}
+  .step{display:flex;align-items:center;gap:12px;padding:6px 0;position:relative}
+  .step .ic{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:14px;background:#F1E9DA;color:#B9AF9D;z-index:1}
+  .step.done .ic{background:var(--honey);color:#fff}
+  .step .lab{flex:1;font-size:14px;font-weight:600;color:#B9AF9D}
+  .step.done .lab{color:var(--ink)}
+  .step time{font-family:var(--font-num);font-size:14px;color:var(--honey-deep)}
+  .field{margin-bottom:16px}
+  .field label{font-size:12px;font-weight:700;color:var(--ink-soft);display:block;margin-bottom:7px}
+  .field textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px;font:inherit;font-size:13px;resize:none;background:#fff}
+  .addph{display:flex;gap:8px;flex-wrap:wrap}
+  .addph button{border:1px solid var(--line);background:#fff;border-radius:12px;width:52px;height:52px;font-size:22px;cursor:pointer}
+  .addph button:active{transform:scale(.94)}
+
+  /* toast */
+  .toast{position:absolute;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#FBF6EC;font-size:13px;font-weight:600;padding:11px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:.3s;z-index:50;box-shadow:0 12px 30px -10px rgba(0,0,0,.5)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .muted-title{font-size:15px;font-weight:700;margin:2px 0 14px}
+
+  /* pickup code + authorized person */
+  .whoami{font-size:13px;font-weight:700;color:var(--ink)}
+  .codebox{text-align:center;padding:6px 0 2px}
+  .codebox .clabel{font-size:11.5px;color:var(--ink-soft)}
+  .codebox .code{font-family:var(--font-num);font-size:40px;font-weight:700;letter-spacing:.16em;color:var(--honey-deep);margin:6px 0 4px}
+  .codebox .cby{font-size:12px;color:var(--ink-soft)}
+  .codein{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;font-size:18px;letter-spacing:.2em;text-align:center;font-family:var(--font-num);background:#fff}
+
+  /* homework checklist (parent, read-only) */
+  .hwrow{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:14px}
+  .hwrow:not(:last-child){border-bottom:1px solid #F4EEE1}
+  .hwtick{width:20px;height:20px;border-radius:6px;border:2px solid var(--line);display:grid;place-items:center;font-size:12px;color:#fff;flex-shrink:0}
+  .hwtick.on{background:var(--teal);border-color:var(--teal)}
+  .hwrow .undone{color:#B9AF9D}
+  .hwrow .hwstat{margin-left:auto;font-size:11.5px;color:var(--ink-soft)}
+  /* homework + mood toggles (teacher) */
+  .hwtoggle,.moodpick{display:flex;gap:8px;flex-wrap:wrap}
+  .hwtoggle button{border:1px solid var(--line);background:#fff;font:inherit;font-size:13px;font-weight:600;color:var(--ink-soft);padding:9px 14px;border-radius:12px;cursor:pointer}
+  .hwtoggle button.on{background:var(--teal);border-color:var(--teal);color:#fff}
+  .moodpick button{border:1px solid var(--line);background:#fff;width:48px;height:44px;font-size:22px;border-radius:12px;cursor:pointer}
+  .moodpick button.on{background:#FFF3DF;border-color:var(--honey)}
+
+  /* summary card */
+  .scard{border-radius:22px;overflow:hidden;box-shadow:0 14px 34px -18px rgba(80,60,20,.55)}
+  .scard-top{background:linear-gradient(135deg,var(--honey),var(--honey-deep));color:#fff;padding:18px;display:flex;align-items:center;gap:12px}
+  .scard-top .ava{color:#fff}
+  .scard-top b{font-size:17px;display:block}
+  .scard-top span{font-size:11.5px;opacity:.9}
+  .scard-top .moodbig{margin-left:auto;font-size:30px}
+  .scard-body{background:#fff;padding:6px 18px 16px}
+  .srow2{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #F4EEE1;font-size:14px}
+  .srow2 .se{font-size:17px}
+  .srow2 .sk{color:var(--ink-soft);font-size:13px;width:44px}
+  .srow2 .sv{margin-left:auto;font-weight:600}
+  .snote{padding:12px 0 2px;font-size:12.5px;color:var(--ink-soft);line-height:1.5}
+  .bp-open{color:var(--honey-deep)!important;border-color:#EAD9B8!important;background:#FFF6E6!important;font-weight:600}
+  /* today menu */
+  .menulist{display:flex;flex-direction:column;gap:2px}
+  .menuitem{display:flex;align-items:center;gap:9px;font-size:14px;padding:6px 0}
+  .menuitem:not(:last-child){border-bottom:1px solid #F4EEE1}
+  .menuitem span{font-size:14px;opacity:.85}
+  .menu-edit{background:var(--card);border:1px solid #F3ECDD;border-radius:16px;padding:14px 15px;margin-bottom:16px}
+  .menu-edit textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px;font:inherit;font-size:13.5px;line-height:1.7;resize:none;background:#fff}
+
+  /* ===== 商业蓝图(全屏投资人视角) ===== */
+  .bp{position:fixed;inset:0;z-index:200;background:var(--paper);display:flex;flex-direction:column}
+  .bp[hidden]{display:none}
+  .bp-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-bottom:1px solid var(--line);background:rgba(251,246,236,.9);backdrop-filter:blur(6px)}
+  .bp-brand{font-weight:700;display:flex;align-items:center;gap:9px;letter-spacing:.02em}
+  .bp-brand .mark{width:24px;height:24px;border-radius:8px;background:conic-gradient(from 210deg,var(--honey),#F2C078,var(--honey-deep));display:grid;place-items:center;font-size:13px}
+  .bp-brand em{font-style:normal;color:var(--ink-soft);font-weight:500;font-size:13px}
+  .bp-close,.bp-backbtn{border:1px solid var(--line);background:#fff;color:var(--ink);font:inherit;font-weight:600;font-size:13.5px;padding:8px 14px;border-radius:999px;cursor:pointer}
+  .bp-close:active,.bp-backbtn:active{transform:scale(.97)}
+  .bp-scroll{flex:1;overflow-y:auto}
+  .bp-scroll>*{max-width:920px;margin-inline:auto;padding-inline:24px}
+  .bp-eyebrow{font-size:12px;letter-spacing:.2em;color:var(--honey-deep);font-weight:700;text-transform:uppercase;margin-bottom:14px}
+  .bp h1{font-size:clamp(28px,5vw,46px);line-height:1.12;font-weight:800;letter-spacing:-.01em}
+  .bp h1 em{font-style:normal;color:var(--honey-deep)}
+  .bp h2{font-size:clamp(20px,3vw,28px);line-height:1.25;font-weight:700;margin-bottom:22px}
+  .bp h3{font-size:15px;font-weight:700;margin-bottom:8px}
+  .bp-hero{padding-top:64px;padding-bottom:48px}
+  .bp-lead{font-size:clamp(15px,2vw,18px);color:var(--ink-soft);line-height:1.6;margin-top:20px;max-width:640px}
+  .bp-tags{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+  .bp-tags span{background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 15px;font-size:13px;font-weight:600;color:var(--ink)}
+  .bp-sec{padding-block:44px;border-top:1px solid var(--line)}
+  .bp-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .bp-grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media(max-width:760px){.bp-cols{grid-template-columns:1fr}.bp-grid4{grid-template-columns:1fr 1fr}}
+  .bp-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px}
+  .bp-card p{font-size:13.5px;color:var(--ink-soft);line-height:1.55}
+  .bp-card.money .big{font-family:var(--font-num);font-size:24px;font-weight:700;color:var(--honey-deep);margin:6px 0 8px}
+  .bp-card.money .big small{font-size:13px;color:var(--ink-soft);font-family:var(--font-cn);font-weight:500}
+  .bp-note{display:block;font-size:11.5px;color:#A79B86;margin-top:8px}
+  .bp-feat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}
+  .bp-feat b{display:block;font-size:14.5px;margin-bottom:6px}
+  .bp-feat span{font-size:12.5px;color:var(--ink-soft);line-height:1.5}
+  .bp-cta-line{margin-top:18px;font-size:13px;color:var(--honey-deep);font-weight:600}
+  .bp-policy .bp-table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .bp-table th,.bp-table td{text-align:left;padding:13px 16px;font-size:13.5px;border-bottom:1px solid var(--line)}
+  .bp-table th{background:#F3ECDD;font-size:12px;letter-spacing:.06em;color:var(--ink-soft)}
+  .bp-table tr:last-child td{border-bottom:0}
+  .bp-table td.ok{color:var(--teal);font-weight:600}
+  .bp-table td.warn{color:#C0562F;font-weight:600}
+  .bp-road{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px}
+  .bp-step{flex:1;min-width:150px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}
+  .bp-step .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#F1E9DA;color:var(--ink-soft);font-family:var(--font-num);font-weight:700;font-size:14px;margin-bottom:10px}
+  .bp-step.done{border-color:var(--honey);background:linear-gradient(180deg,#FFF7EA,#fff)}
+  .bp-step.done .n{background:var(--honey);color:#fff}
+  .bp-step b{display:block;font-size:14px;margin-bottom:4px}
+  .bp-step em{font-style:normal;font-size:12px;color:var(--ink-soft);line-height:1.4;display:block}
+  .bp-final{text-align:center;border-top:1px solid var(--line)}
+  .bp-final .bp-lead{margin-inline:auto}
+  .bp-backbtn{margin-top:26px;background:linear-gradient(135deg,var(--honey),var(--honey-deep));color:#fff;border:0;font-size:15px;padding:13px 26px;box-shadow:0 10px 22px -10px rgba(201,124,34,.9)}
+  .bp-foot{padding:26px 24px 48px;text-align:center;color:#A79B86;font-size:11.5px;border-top:1px solid var(--line);margin-top:8px}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="top">
+    <div class="brandrow">
+      <div class="brand">
+        <div class="mark">🌤️</div>
+        <div>INTO<small>AFTER SCHOOL · 放学后每一步都看得见</small></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="reset bp-open" onclick="openBlueprint()">商业蓝图</button>
+        <button class="reset" onclick="resetDemo()">重置</button>
+      </div>
+    </div>
+    <div class="roles">
+      <button id="r-parent" onclick="setRole('parent')">家长视图</button>
+      <button id="r-teacher" onclick="setRole('teacher')">老师视图</button>
+    </div>
+  </div>
+  <div class="scroll"><div class="pad" id="app"></div></div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<div class="bp" id="blueprint" hidden>
+  <div class="bp-bar">
+    <div class="bp-brand"><span class="mark">🌤️</span> INTO · After School <em>商业蓝图</em></div>
+    <button class="bp-close" onclick="closeBlueprint()">‹ 返回产品 Demo</button>
+  </div>
+  <div class="bp-scroll">
+
+    <section class="bp-hero">
+      <div class="bp-eyebrow">课后托管 · 家长沟通 SaaS</div>
+      <h1>把看不见的放学后,变成<em>看得见的一天</em>。</h1>
+      <p class="bp-lead">面向双职工家庭的课后托管平台:机构负责接送、包餐、监督作业,家长在手机上实时看到孩子的每一步,并通过取件码安全交接。</p>
+      <div class="bp-tags"><span>接送 · 包餐 · 作业监督</span><span>实时透明</span><span>安全交接</span></div>
+    </section>
+
+    <section class="bp-sec">
+      <div class="bp-eyebrow">机会</div>
+      <h2>放学后 3–6 点,是一个每天都在发生的刚需缺口</h2>
+      <div class="bp-cols">
+        <div class="bp-card"><h3>痛点</h3><p>双职工父母下班前无法接孩子;现有沟通靠微信群,信息乱、不透明,家长焦虑"孩子接到没、吃了没、作业写了没"。</p></div>
+        <div class="bp-card"><h3>规模</h3><p>全国小学生约 1 亿量级,城镇双职工家庭普遍存在课后看护缺口。<span class="bp-note">(市场规模为方向性估算,需进一步测算)</span></p></div>
+        <div class="bp-card"><h3>为什么现在</h3><p>"双减"后课后托管服务受政策鼓励,大量社区托管机构涌现,但普遍缺乏像样的家长沟通工具。</p></div>
+      </div>
+    </section>
+
+    <section class="bp-sec">
+      <div class="bp-eyebrow">产品</div>
+      <h2>我们把"托管"这件看不见的事,做成家长看得见、放心的体验</h2>
+      <div class="bp-grid4">
+        <div class="bp-feat"><b>🕒 看得见的一天</b><span>接到 → 用餐 → 写作业 → 交接,每一步实时打时间戳。</span></div>
+        <div class="bp-feat"><b>🔐 安全交接</b><span>授权接送人 + 动态取件码,老师核对后才交接,杜绝冒接。</span></div>
+        <div class="bp-feat"><b>✏️ 作业透明</b><span>各科完成清单,呼应"监督不辅导"的定位。</span></div>
+        <div class="bp-feat"><b>📸 可分享小结</b><span>每日小结卡,家长截图发家庭群 → 自发口碑传播。</span></div>
+      </div>
+      <p class="bp-cta-line">→ 左上角「返回产品 Demo」可现场体验这套家长/老师界面。</p>
+    </section>
+
+    <section class="bp-sec bp-policy">
+      <div class="bp-eyebrow">政策站位</div>
+      <h2>主体立足政策安全区,风险业务合规单列</h2>
+      <table class="bp-table">
+        <tr><th>业务</th><th>政策定性</th><th>策略</th></tr>
+        <tr><td>晚托照护(接送/餐/作业监督)</td><td class="ok">课后托管,政策鼓励</td><td>✅ SaaS 主体</td></tr>
+        <tr><td>境外外教学科英语</td><td class="warn">双减高压区</td><td>⚠️ 合规重构后单独增值,不绑主线</td></tr>
+      </table>
+      <p class="bp-note">懂监管是这个赛道的入场券:主线业务政策友好、可规模化;英语课以非学科/合规师资方式分开推进。</p>
+    </section>
+
+    <section class="bp-sec">
+      <div class="bp-eyebrow">商业模式</div>
+      <h2>三层收入,可叠加</h2>
+      <div class="bp-cols">
+        <div class="bp-card money"><h3>① SaaS 订阅</h3><p class="big">¥5–15<small>/学生/月</small></p><p>向机构收,稳定、可预测。</p></div>
+        <div class="bp-card money"><h3>② 交易抽佣</h3><p class="big">托管费 / 课时费</p><p>家长在平台付费,平台抽成 —— 规模化后的主要利润来源。</p></div>
+        <div class="bp-card money"><h3>③ 增值</h3><p class="big">英语课 · 保险 · 相册</p><p>合规增值服务单独售卖,提升客单与留存。</p></div>
+      </div>
+    </section>
+
+    <section class="bp-sec">
+      <div class="bp-eyebrow">路线图</div>
+      <h2>不一次全做:先做深一个城市,留存为纲</h2>
+      <div class="bp-road">
+        <div class="bp-step done"><span class="n">0</span><b>可点 Demo</b><em>验证形态 ✅ 已完成</em></div>
+        <div class="bp-step"><span class="n">1</span><b>单机构 MVP</b><em>接后端+小程序 · 验证家长每日留存</em></div>
+        <div class="bp-step"><span class="n">2</span><b>多租户化</b><em>机构自助开通 · 同城 3–5 家</em></div>
+        <div class="bp-step"><span class="n">3</span><b>商业化闭环</b><em>微信支付 · 订阅/抽佣</em></div>
+        <div class="bp-step"><span class="n">4</span><b>英语课增值</b><em>合规重启 · 提升付费意愿</em></div>
+      </div>
+    </section>
+
+    <section class="bp-sec">
+      <div class="bp-eyebrow">护城河</div>
+      <h2>壁垒不在软件,在被黏住的三样东西</h2>
+      <div class="bp-cols">
+        <div class="bp-card"><h3>家长网络</h3><p>每个机构背后是一批每天打开的家长;密度形成同城口碑与网络效应。</p></div>
+        <div class="bp-card"><h3>机构迁移成本</h3><p>学生数据、操作习惯、家长关系沉淀在平台,越用越难换。</p></div>
+        <div class="bp-card"><h3>师资/内容供给</h3><p>合规的外教/内容供给一旦建立,后来者难以短期复制。</p></div>
+      </div>
+    </section>
+
+    <section class="bp-sec bp-final">
+      <div class="bp-eyebrow">进展 &amp; 诉求</div>
+      <h2>现在:可体验的产品 Demo 已就绪</h2>
+      <p class="bp-lead">寻找:首批试点托管机构、种子资金、以及懂本地教育运营的合伙人。</p>
+      <button class="bp-backbtn" onclick="closeBlueprint()">体验产品 Demo →</button>
+    </section>
+
+    <div class="bp-foot">INTO · After School —— 商业蓝图为内部草案,数据含估算,以实际测算为准。</div>
+  </div>
+</div>
+
+<script>
+const KEY = "afterschool_demo_v2";
+const STEPS = [
+  {label:"已接到", emoji:"🚸", color:"#5B8DEF"},
+  {label:"用餐中", emoji:"🍚", color:"#E79A3C"},
+  {label:"写作业中", emoji:"✏️", color:"#8B7EC8"},
+  {label:"可接走", emoji:"✅", color:"#3E8E7E"},
+  {label:"已交接", emoji:"🤝", color:"#7A9E7E"},
+];
+const PHOTO_POOL = [
+  {emo:"🍜", cap:"晚餐吃光光", g:"linear-gradient(135deg,#F6A96B,#E2703A)"},
+  {emo:"📖", cap:"认真写作业", g:"linear-gradient(135deg,#8E86D6,#5F56B0)"},
+  {emo:"😄", cap:"和同学玩", g:"linear-gradient(135deg,#5BB8A6,#2E8272)"},
+  {emo:"🎨", cap:"画了幅画", g:"linear-gradient(135deg,#EF8FB0,#D5567F)"},
+  {emo:"🧩", cap:"拼图时间", g:"linear-gradient(135deg,#6FB1E6,#3B7FC4)"},
+];
+const CLASSES = [
+  {dow:"周二", d:"14", t:"19:30–20:10", topic:"美国外教 · 日常对话", teacher:"Ms. Amy(加州)"},
+  {dow:"周四", d:"16", t:"19:30–20:10", topic:"美国外教 · 绘本共读", teacher:"Mr. Ben(纽约)"},
+  {dow:"周六", d:"18", t:"10:00–10:40", topic:"美国外教 · 自然拼读", teacher:"Ms. Amy(加州)"},
+];
+
+function seed(){
+  return {
+    role:"parent",
+    view:"today",       // parent tabs: today|photos|class
+    sel:null,           // teacher selected student id
+    menu:["番茄牛肉面","清炒西兰花","玉米排骨汤","餐后水果:苹果"],
+    students:[
+      {id:"s1", name:"林小满", emoji:"🐤", grade:"二年级 · 3班", mine:true, req:null, note:"", mood:"😄",
+       stamps:[{i:0,t:"15:42"},{i:1,t:"16:25"},{i:2,t:"17:08"}], photos:[0,1],
+       pickups:[{name:"妈妈 · 林女士",rel:"母亲"},{name:"爷爷 · 林先生",rel:"祖父"}],
+       homework:[{s:"语文",done:true},{s:"数学",done:true},{s:"英语",done:false}]},
+      {id:"s2", name:"陈乐乐", emoji:"🐰", grade:"二年级 · 1班", mine:false, req:null, note:"", mood:"🙂",
+       stamps:[{i:0,t:"15:50"},{i:1,t:"16:25"}], photos:[2],
+       pickups:[{name:"妈妈 · 陈女士",rel:"母亲"}],
+       homework:[{s:"语文",done:false},{s:"数学",done:false}]},
+      {id:"s3", name:"王一诺", emoji:"🦊", grade:"三年级 · 2班", mine:false, req:null, note:"作业完成得很棒", mood:"😄",
+       stamps:[{i:0,t:"15:38"},{i:1,t:"16:20"},{i:2,t:"16:58"},{i:3,t:"17:40"}], photos:[3,4],
+       pickups:[{name:"爸爸 · 王先生",rel:"父亲"},{name:"奶奶 · 王女士",rel:"祖母"}],
+       homework:[{s:"语文",done:true},{s:"数学",done:true},{s:"英语",done:true}]},
+    ],
+  };
+}
+let S = load();
+function load(){ try{ const r=localStorage.getItem(KEY); return r?JSON.parse(r):seed(); }catch(e){ return seed(); } }
+function save(){ localStorage.setItem(KEY, JSON.stringify(S)); }
+function resetDemo(){ S=seed(); save(); render(); toast("已恢复初始状态"); }
+function openBlueprint(){ const b=document.getElementById("blueprint"); b.hidden=false; b.scrollTop=0; const sc=b.querySelector(".bp-scroll"); if(sc) sc.scrollTop=0; }
+function closeBlueprint(){ document.getElementById("blueprint").hidden=true; }
+
+function nowHHMM(){ const d=new Date(); return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
+function curIdx(st){ return st.stamps.length?Math.max(...st.stamps.map(s=>s.i)):-1; }
+function timeOf(st,i){ const f=st.stamps.find(s=>s.i===i); return f?f.t:null; }
+
+function setRole(r){ S.role=r; if(r==="teacher") S.sel=null; save(); render(); }
+function setView(v){ S.view=v; save(); render(); }
+
+function parentPickup(id,pi){ const st=S.students.find(s=>s.id===id);
+  const code=String(Math.floor(1000+Math.random()*9000));
+  st.req={by:st.pickups[pi].name, code}; save(); render(); toast("已通知老师,出示取件码即可交接"); }
+function verifyHandoff(id){ const st=S.students.find(s=>s.id===id);
+  const el=document.getElementById("codein"); const val=(el&&el.value||"").trim();
+  if(!st.req) return;
+  if(val!==st.req.code){ toast("取件码不对,请核对家长手机"); return; }
+  const last=STEPS.length-1; if(curIdx(st)<last) st.stamps.push({i:last,t:nowHHMM()});
+  st.req=null; save(); render(); toast(st.name+" 已安全交接 🤝"); }
+function advance(id){
+  const st=S.students.find(s=>s.id===id); const cur=curIdx(st);
+  if(cur>=STEPS.length-1) return;
+  const nx=cur+1; st.stamps.push({i:nx,t:nowHHMM()});
+  if(nx===STEPS.length-1) st.req=null;
+  save(); render(); toast(st.name+" → "+STEPS[nx].label);
+}
+function toggleHw(id,hi){ const st=S.students.find(s=>s.id===id); st.homework[hi].done=!st.homework[hi].done; save(); render(); }
+function setMood(id,m){ const st=S.students.find(s=>s.id===id); st.mood=m; save(); render(); }
+function addPhoto(id,idx){ const st=S.students.find(s=>s.id===id); if(!st.photos.includes(idx)) st.photos.push(idx); save(); render(); toast("照片已发给家长"); }
+function saveNote(id,val){ const st=S.students.find(s=>s.id===id); st.note=val; save(); }
+function saveMenu(val){ S.menu = val.split("\n").map(x=>x.trim()).filter(Boolean); save(); toast("今日菜单已更新"); }
+
+let toastT;
+function toast(msg){ const el=document.getElementById("toast"); el.textContent=msg; el.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove("show"),2200); }
+
+/* ---------- render ---------- */
+function render(){
+  document.getElementById("r-parent").classList.toggle("on",S.role==="parent");
+  document.getElementById("r-teacher").classList.toggle("on",S.role==="teacher");
+  document.getElementById("app").innerHTML = S.role==="parent" ? parentView() : teacherView();
+}
+function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function parentView(){
+  const st=S.students.find(s=>s.mine);
+  const tabs=`<div class="tabs">
+    <button class="${S.view==='today'?'on':''}" onclick="setView('today')">今日</button>
+    <button class="${S.view==='summary'?'on':''}" onclick="setView('summary')">小结</button>
+    <button class="${S.view==='photos'?'on':''}" onclick="setView('photos')">照片</button>
+    <button class="${S.view==='class'?'on':''}" onclick="setView('class')">英语课</button>
+  </div>`;
+  if(S.view==="photos") return tabs+photosView(st);
+  if(S.view==="class") return tabs+classView();
+  if(S.view==="summary") return tabs+summaryView(st);
+  return tabs+todayView(st);
+}
+
+function todayView(st){
+  const cur=curIdx(st); const s=cur>=0?STEPS[cur]:null;
+  const doneCount=cur+1; const fill = STEPS.length>1 ? (Math.max(0,cur)/(STEPS.length-1))*100 : 0;
+  let nodes="";
+  STEPS.forEach((step,i)=>{
+    const done=i<=cur; const isNext=i===cur+1; const t=timeOf(st,i);
+    const cls = done?"done":(isNext?"next pending":"pending");
+    nodes+=`<div class="node ${cls}">
+      <div class="bead">${done?step.emoji:""}</div>
+      <h3>${step.label}</h3>
+      ${t?`<time>${t}</time>`:`<small>${isNext?"即将进行":"待完成"}</small>`}
+    </div>`;
+  });
+
+  let pickup, pickupHint="放学接送更安心:选择接送人,老师核对取件码后再交接。";
+  if(cur>=STEPS.length-1){
+    pickup=`<div class="waiting">✓ 今天已安全交接,辛苦啦</div>`; pickupHint="孩子已交接给授权接送人。";
+  } else if(st.req){
+    pickup=`<div class="codebox">
+        <span class="clabel">出示给老师的取件码</span>
+        <div class="code">${st.req.code}</div>
+        <span class="cby">接送人:${st.req.by}</span>
+      </div>`;
+    pickupHint="老师核对下面的取件码后完成交接。";
+  } else {
+    pickup=`<div class="whoami">谁来接 ${st.name}?</div>`+
+      st.pickups.map((p,i)=>`<button class="btn ghost" style="margin-top:8px" onclick="parentPickup('${st.id}',${i})">${p.name} · 我来接了</button>`).join("");
+  }
+
+  const menuHtml = `<div class="pickup" style="margin-top:14px">
+    <div class="eyebrow" style="margin-bottom:8px">今日晚餐 · ${cur>=1?'已用餐':'待用餐'}</div>
+    ${S.menu&&S.menu.length ? `<div class="menulist">${S.menu.map(m=>`<div class="menuitem"><span>🥢</span>${m}</div>`).join("")}</div>` : `<p style="font-size:12.5px;color:var(--ink-soft);margin:0">今日菜单待机构发布</p>`}
+  </div>`;
+
+  const doneHw=st.homework.filter(h=>h.done).length;
+  const hwHtml = `<div class="pickup" style="margin-top:14px">
+    <div class="eyebrow" style="margin-bottom:8px">今日作业 · ${doneHw}/${st.homework.length} 完成</div>
+    ${st.homework.map(h=>`<div class="hwrow"><span class="hwtick ${h.done?'on':''}">${h.done?'✓':''}</span><span class="${h.done?'':'undone'}">${h.s}</span><span class="hwstat">${h.done?'完成':'未完成'}</span></div>`).join("")}
+  </div>`;
+
+  return `
+  <div class="eyebrow">今天 · ${new Date().getMonth()+1}月${new Date().getDate()}日</div>
+  <div class="hero">
+    <div class="who">
+      <div class="ava">${st.emoji}</div>
+      <div><h1>${st.name}</h1><p>${st.grade}</p></div>
+    </div>
+    <div class="bignow">
+      <span class="dot" style="background:${s?s.color:'#B9AF9D'}"></span>
+      <div class="txt"><b>${s?s.label:'尚未到班'}</b><span>${s?('更新于 '+timeOf(st,cur)):'放学后由老师接到'}</span></div>
+    </div>
+    <div class="tl live" style="--fill:${fill}%">${nodes}</div>
+  </div>
+  ${menuHtml}
+  ${hwHtml}
+  ${st.note?`<div class="pickup" style="margin-top:14px"><div class="eyebrow" style="margin-bottom:6px">老师留言</div><p style="color:var(--ink);font-size:13.5px;margin:0">“${esc(st.note)}”</p></div>`:''}
+  <div class="pickup">
+    <p>${pickupHint}</p>
+    ${pickup}
+  </div>`;
+}
+
+function summaryView(st){
+  const cur=curIdx(st); const s=cur>=0?STEPS[cur]:null;
+  const doneHw=st.homework.filter(h=>h.done).length; const allHw=st.homework.length;
+  const ate = cur>=1; const handed = cur>=STEPS.length-1;
+  const rows=[
+    ["🕒","状态", s?s.label+(timeOf(st,cur)?" · "+timeOf(st,cur):""):"尚未到班"],
+    ["🍚","晚餐", (ate?"已用晚餐":"待用餐")+((S.menu&&S.menu.length)?" · "+S.menu[0]:"")],
+    ["✏️","作业", doneHw+"/"+allHw+" 完成"],
+    ["📸","照片", st.photos.length+" 张"],
+    ["🤝","交接", handed?("已交接 · "+timeOf(st,STEPS.length-1)):"待接送"],
+  ];
+  return `<div class="scard">
+    <div class="scard-top">
+      <div class="ava" style="background:rgba(255,255,255,.22)">${st.emoji}</div>
+      <div><b>${st.name}</b><span>今日小结 · ${new Date().getMonth()+1}月${new Date().getDate()}日</span></div>
+      <div class="moodbig">${st.mood||"🙂"}</div>
+    </div>
+    <div class="scard-body">
+      ${rows.map(r=>`<div class="srow2"><span class="se">${r[0]}</span><span class="sk">${r[1]}</span><span class="sv">${r[2]}</span></div>`).join("")}
+      ${st.note?`<div class="snote">老师留言:${esc(st.note)}</div>`:""}
+    </div>
+  </div>
+  <button class="btn ghost" style="margin-top:14px" onclick="shareSummary('${st.id}')">复制小结 · 发到家庭群</button>`;
+}
+function shareSummary(id){ const st=S.students.find(s=>s.id===id); const cur=curIdx(st);
+  const doneHw=st.homework.filter(h=>h.done).length;
+  const txt=`【${st.name} 今日小结】\n状态:${cur>=0?STEPS[cur].label:"未到班"}\n晚餐:${(S.menu&&S.menu.length)?S.menu.join("、"):"—"}\n作业:${doneHw}/${st.homework.length} 完成\n照片:${st.photos.length} 张\n心情:${st.mood||"🙂"}${st.note?"\n老师留言:"+st.note:""}`;
+  if(navigator.clipboard){ navigator.clipboard.writeText(txt).then(()=>toast("小结已复制,可粘贴到微信")).catch(()=>toast("已生成小结")); }
+  else toast("已生成小结"); }
+
+function photosView(st){
+  if(!st.photos.length) return `<div class="muted-title">今日照片</div><div class="empty">老师还没上传照片,先去别处逛逛~</div>`;
+  const cells=st.photos.map(i=>{const p=PHOTO_POOL[i];return `<div class="ph" style="background:${p.g}"><div class="emo">${p.emo}</div><span>${p.cap}</span></div>`}).join("");
+  return `<div class="muted-title">今日照片 · ${st.photos.length} 张</div><div class="grid">${cells}</div>`;
+}
+
+function classView(){
+  const rows=CLASSES.map(c=>`<div class="cls">
+    <div class="day"><b>${c.d}</b><span>${c.dow}</span></div>
+    <div class="info"><h4>${c.topic}</h4><p>${c.t} · ${c.teacher}</p></div>
+    <a href="https://zoom.us" target="_blank" rel="noopener">加入</a>
+  </div>`).join("");
+  return `<div class="muted-title">本周美国外教课</div>${rows}
+    <p style="font-size:11.5px;color:var(--ink-soft);margin-top:8px;text-align:center">Demo 阶段「加入」为占位链接,正式版接入实际视频</p>`;
+}
+
+/* ---------- teacher ---------- */
+function teacherView(){
+  if(S.sel) return teacherDetail(S.sel);
+  const rows=S.students.map(st=>{
+    const cur=curIdx(st); const s=cur>=0?STEPS[cur]:null;
+    return `<div class="srow" onclick="openStudent('${st.id}')">
+      <div class="ava">${st.emoji}</div>
+      <div class="m"><b>${st.name}</b><p>${st.grade}</p></div>
+      ${st.req?'<span class="bell" title="家长已到"></span>':''}
+      <span class="chip" style="background:${s?s.color:'#B9AF9D'}">${s?s.label:'未到'}</span>
+    </div>`;
+  }).join("");
+  const reqCount=S.students.filter(s=>s.req).length;
+  return `
+    <div class="menu-edit">
+      <div class="eyebrow" style="margin-bottom:8px">今日晚餐菜单 · 家长可见</div>
+      <textarea rows="4" placeholder="每行一道菜,例如:&#10;番茄牛肉面&#10;清炒西兰花" onchange="saveMenu(this.value)">${esc((S.menu||[]).join("\n"))}</textarea>
+      <p style="font-size:11px;color:var(--ink-soft);margin-top:6px">每行一道菜,离开输入框自动保存,全部学生的家长都能看到。</p>
+    </div>
+    <div class="eyebrow">今日名单 · ${S.students.length} 人</div>
+    ${reqCount?`<div class="alert"><p>🔔 ${reqCount} 位家长已到,等待交接</p></div>`:''}
+    ${rows}`;
+}
+function openStudent(id){ S.sel=id; save(); render(); }
+
+function teacherDetail(id){
+  const st=S.students.find(s=>s.id===id); const cur=curIdx(st);
+  const steps=STEPS.map((step,i)=>{
+    const done=i<=cur; const t=timeOf(st,i);
+    return `<div class="step ${done?'done':''}">
+      <div class="ic">${step.emoji}</div>
+      <div class="lab">${step.label}</div>
+      ${t?`<time>${t}</time>`:''}
+    </div>`;
+  }).join("");
+  const canAdvance=cur<STEPS.length-1;
+  const nextLabel=canAdvance?STEPS[cur+1].label:null;
+  const photoBtns=PHOTO_POOL.map((p,i)=>`<button onclick="addPhoto('${st.id}',${i})" ${st.photos.includes(i)?'disabled style=opacity:.35':''}>${p.emo}</button>`).join("");
+
+  return `
+  <button class="back" onclick="openStudent(null)">‹ 返回名单</button>
+  <div class="who" style="margin-bottom:16px">
+    <div class="ava">${st.emoji}</div>
+    <div><h1 style="font-size:18px">${st.name}</h1><p style="font-size:12px;color:var(--ink-soft)">${st.grade}</p></div>
+  </div>
+  ${st.req?`<div class="alert"><p>🔔 ${st.req.by} 来接 ${st.name},请核对取件码</p>
+      <input id="codein" class="codein" inputmode="numeric" maxlength="4" placeholder="输入家长手机上的 4 位取件码" />
+      <button class="btn primary" style="margin-top:10px" onclick="verifyHandoff('${st.id}')">核对并交接</button></div>`:''}
+  <div class="eyebrow">今日进度</div>
+  <div class="stepper">${steps}</div>
+  ${canAdvance?`<button class="btn ghost" onclick="advance('${st.id}')">标记为「${nextLabel}」</button>`:`<div class="waiting" style="margin-bottom:4px">✓ 今日流程已全部完成</div>`}
+  <div class="field" style="margin-top:20px">
+    <label>今日作业(点一下切换完成)</label>
+    <div class="hwtoggle">${st.homework.map((h,i)=>`<button class="${h.done?'on':''}" onclick="toggleHw('${st.id}',${i})">${h.done?'✓ ':''}${h.s}</button>`).join("")}</div>
+  </div>
+  <div class="field">
+    <label>今日心情</label>
+    <div class="moodpick">${["😄","🙂","😐","😴"].map(m=>`<button class="${st.mood===m?'on':''}" onclick="setMood('${st.id}','${m}')">${m}</button>`).join("")}</div>
+  </div>
+  <div class="field">
+    <label>发一张照片给家长</label>
+    <div class="addph">${photoBtns}</div>
+  </div>
+  <div class="field">
+    <label>今日备注(家长可见)</label>
+    <textarea rows="3" placeholder="例如:今天作业完成得很认真" onchange="saveNote('${st.id}',this.value)">${esc(st.note)}</textarea>
+  </div>`;
+}
+
+render();
+</script>
+</body>
+</html>
