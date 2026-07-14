@@ -221,6 +221,13 @@
   .tile b.green{color:var(--teal)} .tile b.warn{color:#C0562F}
   .ratebar{height:9px;border-radius:999px;background:#EFE6D4;overflow:hidden}
   .ratebar>div{height:100%;background:linear-gradient(90deg,var(--honey),var(--honey-deep));border-radius:999px}
+  /* 课程安排(机构端)*/
+  .delcls{border:1px solid #F0D3CC;background:#FBEEEB;color:#C0562F;font:inherit;font-size:12px;font-weight:600;padding:8px 12px;border-radius:10px;cursor:pointer}
+  .delcls:active{transform:scale(.96)}
+  .clsform{display:flex;flex-direction:column;gap:9px}
+  .clsrow2{display:flex;gap:9px}
+  .clsform input{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px;font:inherit;font-size:13.5px;background:#fff;color:var(--ink)}
+  .clsform .btn{margin-top:2px}
   /* today menu */
   .menulist{display:flex;flex-direction:column;gap:2px}
   .menuitem{display:flex;align-items:center;gap:9px;font-size:14px;padding:6px 0}
@@ -395,7 +402,7 @@
 </div>
 
 <script>
-const KEY = "afterschool_demo_v3";
+const KEY = "afterschool_demo_v4";
 const AUTH_KEY = "afterschool_auth_v1";
 const STEPS = [
   {label:"已接到", emoji:"🚸", color:"#5B8DEF"},
@@ -439,6 +446,7 @@ function seed(){
        pickups:[{name:"爸爸 · 王先生",rel:"父亲"},{name:"奶奶 · 王女士",rel:"祖母"}],
        homework:[{s:"语文",done:true},{s:"数学",done:true},{s:"英语",done:true}], autopay:true, bills:[{month:"7月",amount:1200,status:"已扣款",date:"07-05"}]},
     ],
+    classes: CLASSES.map(c=>({...c})),
   };
 }
 let S = load();
@@ -709,7 +717,9 @@ function photosView(st){
 }
 
 function classView(){
-  const rows=CLASSES.map(c=>`<div class="cls">
+  const list=S.classes||[];
+  if(!list.length) return `<div class="muted-title">本周美国外教课</div><div class="empty">本周暂无排课,机构发布后可见</div>`;
+  const rows=list.map(c=>`<div class="cls">
     <div class="day"><b>${c.d}</b><span>${c.dow}</span></div>
     <div class="info"><h4>${c.topic}</h4><p>${c.t} · ${c.teacher}</p></div>
     <a href="https://zoom.us" target="_blank" rel="noopener">加入</a>
@@ -722,11 +732,46 @@ function classView(){
 function teacherView(){
   if(S.sel) return teacherDetail(S.sel);
   const tabs=`<div class="tabs">
-    <button class="${S.orgView!=='billing'?'on':''}" onclick="setOrgView('roster')">今日名单</button>
+    <button class="${(S.orgView!=='billing'&&S.orgView!=='classes')?'on':''}" onclick="setOrgView('roster')">今日名单</button>
+    <button class="${S.orgView==='classes'?'on':''}" onclick="setOrgView('classes')">课程安排</button>
     <button class="${S.orgView==='billing'?'on':''}" onclick="setOrgView('billing')">收费管理</button>
   </div>`;
-  return tabs + (S.orgView==="billing" ? orgBilling() : orgRoster());
+  return tabs + (S.orgView==="billing" ? orgBilling() : S.orgView==="classes" ? orgClasses() : orgRoster());
 }
+function orgClasses(){
+  const list=S.classes||[];
+  const rows = list.length
+    ? list.map((c,i)=>`<div class="cls">
+        <div class="day"><b>${c.d}</b><span>${c.dow}</span></div>
+        <div class="info"><h4>${c.topic}</h4><p>${c.t} · ${c.teacher}</p></div>
+        <button class="delcls" onclick="delClass(${i})">删除</button>
+      </div>`).join("")
+    : `<div class="empty">还没有课程,在下面添加第一节</div>`;
+  return `
+    <div class="eyebrow">本周美国外教课 · ${list.length} 节 · 家长可见</div>
+    ${rows}
+    <div class="menu-edit" style="margin-top:16px">
+      <div class="eyebrow" style="margin-bottom:10px">添加一节课</div>
+      <div class="clsform">
+        <div class="clsrow2">
+          <input id="ac-dow" placeholder="星期 如 周二">
+          <input id="ac-d" placeholder="日期 如 14">
+        </div>
+        <input id="ac-t" placeholder="时间 如 19:30–20:10">
+        <input id="ac-topic" placeholder="主题 如 美国外教·日常对话">
+        <input id="ac-teacher" placeholder="老师 如 Ms. Amy(加州)">
+        <button class="btn primary" onclick="addClass()">添加课程</button>
+      </div>
+      <p style="font-size:11px;color:var(--ink-soft);margin-top:8px">添加后,家长端「英语课」立即可见。</p>
+    </div>`;
+}
+function addClass(){
+  const topic=av("ac-topic"); if(!topic){ toast("请填写课程主题"); return; }
+  S.classes=S.classes||[];
+  S.classes.push({ dow:av("ac-dow")||"周—", d:av("ac-d")||"–", t:av("ac-t")||"待定", topic:topic, teacher:av("ac-teacher")||"外教" });
+  save(); render(); toast("已添加课程,家长端可见");
+}
+function delClass(i){ S.classes.splice(i,1); save(); render(); toast("已删除该课程"); }
 function orgRoster(){
   const rows=S.students.map(st=>{
     const cur=curIdx(st); const s=cur>=0?STEPS[cur]:null;
